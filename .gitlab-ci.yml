@@ -1,0 +1,36 @@
+# Tiled (Qt 6 + Qbs). GitLab.com shared runners or any Docker-capable Runner.
+image: ubuntu:24.04
+
+variables:
+  DEBIAN_FRONTEND: noninteractive
+
+stages:
+  - build
+
+before_script:
+  - apt-get update -qq
+  - apt-get install -y -qq
+      build-essential
+      pkg-config
+      qt6-base-dev
+      qt6-declarative-dev
+      qt6-svg-dev
+      qt6-l10n-tools
+      libqt6test6
+      libgl1-mesa-dev
+      zlib1g-dev
+      python3-dev
+      qbs
+  - qbs setup-toolchains --detect
+  - qbs --version
+
+build_and_test:
+  stage: build
+  script:
+    - qbs build config:release
+    - qbs build -p tests config:release
+  artifacts:
+    when: on_failure
+    paths:
+      - default/
+    expire_in: 1 week
