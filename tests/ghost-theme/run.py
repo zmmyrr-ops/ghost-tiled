@@ -21,6 +21,7 @@ var ln=GhostTheme.roomLeaves(map,{mode:'both'});assert(ln>0,'indoor leaf piles a
 var leafLayer=find(map,'GhostTheme_RoomLeaves');
 assert(leafLayer.objects.some(function(o){return o.property('ghost.leafPlacement')==='corner';}),'corner piles absent');
 assert(leafLayer.objects.some(function(o){return o.property('ghost.leafPlacement')==='edge';}),'edge piles absent');
+assert(leafLayer.objects.every(function(o){var b=GhostTheme.bounds(o),x=o.property('ghost.wallAnchorX'),y=o.property('ghost.wallAnchorY');return b.x<x&&x<b.right&&b.y<y&&y<b.bottom;}),'leaf sprite does not straddle its wall seam');
 var leavesSnapshot=snap(leafLayer);GhostTheme.roomLeaves(map,{mode:'both'});assert(leavesSnapshot===snap(leafLayer),'leaf generation not idempotent');
 assert(leafLayer.objects.every(function(o){return o.property('ghost.room').indexOf('floor_')===0;}),'leaf room identity absent');
 var sn=GhostTheme.scatter(map,opts),g=find(map,'GhostTheme_Scatter');assert(sn>10,'scatter absent');var first=snap(g);assert(g.objects.every(function(o){return o.tile.id>=3&&o.tile.id<=6;}),'room leaves still in scatter');

@@ -139,23 +139,30 @@ var GhostTheme = (function () {
         });});
         function wallAt(x,y){return !!walls[Math.floor(x/100)+','+Math.floor(y/100)];}
         function fits(poly,b){
-            for(var y=b.y+1;y<b.bottom;y+=12)for(var x=b.x+1;x<b.right;x+=12)if(!pointIn(poly,x,y))return false;
-            return pointIn(poly,b.right-1,b.bottom-1);
+            // A wall-root decal straddles the visual seam. It is not a floor-cell occupant.
+            var touchesFloor=false,touchesWall=false;
+            for(var y=b.y+1;y<b.bottom;y+=6)for(var x=b.x+1;x<b.right;x+=6){
+                if(pointIn(poly,x,y))touchesFloor=true;
+                else if(wallAt(x,y))touchesWall=true;
+                else return false;
+            }
+            return touchesFloor&&touchesWall;
         }
-        function add(poly,room,id,x,y,w,h,flipX,flipY,kind){
+        function add(poly,room,id,x,y,w,h,flipX,flipY,kind,anchorX,anchorY){
             var o=object(ts,id,x,y+h,1,0);o.width=w;o.height=h;
             o.tileFlippedHorizontally=!!flipX;o.tileFlippedVertically=!!flipY;
             if(kind==='edge'&&h>w){o.width=h;o.height=w;o.x=x;o.y=y;o.rotation=90;}
             var b=bounds(o);if(!fits(poly,b)||blocked.some(function(r){return overlap(b,r);})||occupied.some(function(r){return overlap(b,r,20);}))return;
             o.setProperty('ghost.room',room);o.setProperty('ghost.leafPlacement',kind);
+            o.setProperty('ghost.wallAnchorX',anchorX);o.setProperty('ghost.wallAnchorY',anchorY);
             results.push(o);occupied.push(b);
         }
         floors.objects.forEach(function(floor){
             var poly=floor.polygon&&floor.polygon.length?floor.polygon.map(function(p){return{x:p.x+floor.x,y:p.y+floor.y};}):[{x:floor.x,y:floor.y},{x:floor.x+floor.width,y:floor.y},{x:floor.x+floor.width,y:floor.y+floor.height},{x:floor.x,y:floor.y+floor.height}];
             if(options.mode!=='edge')poly.forEach(function(v){
                 [-1,1].forEach(function(sx){[-1,1].forEach(function(sy){
-                    if(!wallAt(v.x-sx*35,v.y+sy*35)||!wallAt(v.x+sx*35,v.y-sy*35))return;
-                    add(poly,floor.name,2,sx>0?v.x+3:v.x-87,sy>0?v.y+3:v.y-93,84,90,sx<0,sy<0,'corner');
+                    if(!pointIn(poly,v.x+sx*35,v.y+sy*35)||!wallAt(v.x-sx*35,v.y+sy*35)||!wallAt(v.x+sx*35,v.y-sy*35))return;
+                    add(poly,floor.name,2,sx>0?v.x-24:v.x-60,sy>0?v.y-24:v.y-66,84,90,sx<0,sy<0,'corner',v.x,v.y);
                 });});
             });
             if(options.mode!=='corner')for(var i=0;i<poly.length;i++){
@@ -167,8 +174,8 @@ var GhostTheme = (function () {
                     [-1,1].forEach(function(sign){
                         var horizontal=Math.abs(dx)>Math.abs(dy),ix=horizontal?cx:cx+sign*15,iy=horizontal?cy+sign*15:cy;
                         if(!pointIn(poly,ix,iy)||!wallAt(horizontal?cx:cx-sign*35,horizontal?cy-sign*35:cy))return;
-                        if(horizontal)add(poly,floor.name,1,cx-50,sign>0?cy+3:cy-45,100,42,false,sign<0,'edge');
-                        else add(poly,floor.name,1,sign>0?cx+3:cx-45,cy-50,42,100,sign<0,false,'edge');
+                        if(horizontal)add(poly,floor.name,1,cx-50,sign>0?cy-24:cy-18,100,42,false,sign<0,'edge',cx,cy);
+                        else add(poly,floor.name,1,sign>0?cx-24:cx-18,cy-50,42,100,sign<0,false,'edge',cx,cy);
                     });
                 }
             }
@@ -228,9 +235,10 @@ var GhostTheme = (function () {
         d.addHeading('主题与墙外草垛');
         button('应用废弃主题',function(m){applyTheme(m);return '主题已应用';});
         button('生成墙外草垛（左 / 右 / 上）',function(m){return '已生成 '+edges(m)+' 个草垛';});
-        d.addHeading('房间内叶堆');
+        d.addHeading('墙根叶堆');
+        d.addLabel('贴墙根接缝，角落压住两侧墙脚；不吸附地面格子。');
         var leafMode=d.addComboBox('位置',['贴墙 + 角落','仅贴墙','仅角落']);
-        button('布置室内叶堆',function(m){return '已布置 '+roomLeaves(m,{mode:['both','edge','corner'][leafMode.currentIndex]})+' 处室内叶堆';});
+        button('贴墙根布置叶堆',function(m){return '已布置 '+roomLeaves(m,{mode:['both','edge','corner'][leafMode.currentIndex]})+' 处室内叶堆';});
         d.addHeading('地面碎片');
         var kind=d.addComboBox('素材',['纸片 + 碎石','纸片','碎石']);
         var density=d.addNumberInput('密度 %',12);density.minimum=1;density.maximum=60;
