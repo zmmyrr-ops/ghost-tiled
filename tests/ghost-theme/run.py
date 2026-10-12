@@ -17,7 +17,13 @@ var en=GhostTheme.edges(map);assert(en>20,'wall edges absent');var ed=snap(find(
 assert(find(map,'GhostTheme_Edges').objects.every(function(o){return ['top','left','right'].indexOf(o.property('ghost.wallSide'))>=0&&o.rotation===0;}),'bottom hay or rotated strips generated');
 assert(find(map,'GhostTheme_Edges').objects.some(function(o){return o.tile.id===8&&o.tileFlippedHorizontally;}),'right-facing individual hay absent');
 GhostTheme.edges(map);assert(ed===snap(find(map,'GhostTheme_Edges')),'edges not idempotent');
-var sn=GhostTheme.scatter(map,opts),g=find(map,'GhostTheme_Scatter');assert(sn>10,'scatter absent');var first=snap(g);
+var ln=GhostTheme.roomLeaves(map,{mode:'both'});assert(ln>0,'indoor leaf piles absent');
+var leafLayer=find(map,'GhostTheme_RoomLeaves');
+assert(leafLayer.objects.some(function(o){return o.property('ghost.leafPlacement')==='corner';}),'corner piles absent');
+assert(leafLayer.objects.some(function(o){return o.property('ghost.leafPlacement')==='edge';}),'edge piles absent');
+var leavesSnapshot=snap(leafLayer);GhostTheme.roomLeaves(map,{mode:'both'});assert(leavesSnapshot===snap(leafLayer),'leaf generation not idempotent');
+assert(leafLayer.objects.every(function(o){return o.property('ghost.room').indexOf('floor_')===0;}),'leaf room identity absent');
+var sn=GhostTheme.scatter(map,opts),g=find(map,'GhostTheme_Scatter');assert(sn>10,'scatter absent');var first=snap(g);assert(g.objects.every(function(o){return o.tile.id>=3&&o.tile.id<=6;}),'room leaves still in scatter');
 GhostTheme.scatter(map,opts);assert(first===snap(g),'same seed changed geometry');
 opts.seed++;GhostTheme.scatter(map,opts);assert(first!==snap(g),'new seed did not change layout');
 var locked=g.objectAt(0);locked.setProperty('ghost.locked',true);var lockedID=locked.id,lx=locked.x,ly=locked.y;
@@ -44,6 +50,7 @@ assert(find(map,'GhostTheme_Base').objectCount===baseCount&&find(map,'GhostTheme
 var dialog=new Dialog('dialog regression'),xbox=dialog.addNumberInput('X',300),ybox=dialog.addNumberInput('Y',700),scaleBox=dialog.addNumberInput('Scale',1),captured=null;
 xbox.maximum=5000;ybox.maximum=5000;xbox.value=300;ybox.value=700;
 GhostTheme.acceptValues(dialog,function(){return {x:xbox.value,y:ybox.value,scale:scaleBox.value};},function(v){captured=v;})();
+var panelTest=GhostTheme.openPanel();tiled.log('PANEL_HEIGHT='+panelTest.height);
 assert(captured.x===300&&captured.y===700&&captured.scale===1,'dialog values lost before close');
 tiled.log('THEME_TEST_OK edges='+en+' scatter='+find(reloaded,'GhostTheme_Scatter').objectCount+' props='+placed);
 '''
