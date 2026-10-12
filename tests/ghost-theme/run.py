@@ -14,6 +14,8 @@ GhostTheme.applyTheme(map);
 var n=map.layerCount;GhostTheme.applyTheme(map);assert(map.layerCount===n,'theme application duplicated layers');
 var opts={seed:20261012,density:18,category:'mixed'};
 var en=GhostTheme.edges(map);assert(en>20,'wall edges absent');var ed=snap(find(map,'GhostTheme_Edges'));
+assert(find(map,'GhostTheme_Edges').objects.every(function(o){return ['top','left','right'].indexOf(o.property('ghost.wallSide'))>=0&&o.rotation===0;}),'bottom hay or rotated strips generated');
+assert(find(map,'GhostTheme_Edges').objects.some(function(o){return o.tile.id===8&&o.tileFlippedHorizontally;}),'right-facing individual hay absent');
 GhostTheme.edges(map);assert(ed===snap(find(map,'GhostTheme_Edges')),'edges not idempotent');
 var sn=GhostTheme.scatter(map,opts),g=find(map,'GhostTheme_Scatter');assert(sn>10,'scatter absent');var first=snap(g);
 GhostTheme.scatter(map,opts);assert(first===snap(g),'same seed changed geometry');
@@ -32,7 +34,18 @@ var bad=tiled.mapFormat('tmx').read(input.replace('Map_1.tmx','Map_4.tmx'));reje
 tiled.mapFormat('tmx').write(map,output);
 var reloaded=tiled.mapFormat('tmx').read(output);assert(find(reloaded,'GhostTheme_Props').objectCount===3,'save/reopen lost props');
 assert(find(reloaded,'GhostTheme_Scatter').objects.every(function(o){return o.tile!==null;}),'save/reopen lost tile references');
-tiled.log('THEME_TEST_OK edges='+en+' scatter='+find(map,'GhostTheme_Scatter').objectCount+' props='+placed);
+var baseCount=find(map,'GhostTheme_Base').objectCount;
+var sg=find(map,'GhostTheme_Scatter'),saved=sg.objectAt(0);saved.setProperty('ghost.locked',true);
+assert(GhostTheme.reset(map,false)>0,'default reset removed nothing');
+assert(sg.objectCount===1&&find(map,'GhostTheme_Props').objectCount===3,'default reset removed locked objects or props');
+assert(GhostTheme.reset(map,true)===4,'full reset count mismatch');
+assert(find(map,'GhostTheme_Base').objectCount===baseCount&&find(map,'GhostTheme_Props').objectCount===0,'reset touched background or left props');
+// Real Qt input widgets; use exactly the callback installed by all three dialogs.
+var dialog=new Dialog('dialog regression'),xbox=dialog.addNumberInput('X',300),ybox=dialog.addNumberInput('Y',700),scaleBox=dialog.addNumberInput('Scale',1),captured=null;
+xbox.maximum=5000;ybox.maximum=5000;xbox.value=300;ybox.value=700;
+GhostTheme.acceptValues(dialog,function(){return {x:xbox.value,y:ybox.value,scale:scaleBox.value};},function(v){captured=v;})();
+assert(captured.x===300&&captured.y===700&&captured.scale===1,'dialog values lost before close');
+tiled.log('THEME_TEST_OK edges='+en+' scatter='+find(reloaded,'GhostTheme_Scatter').objectCount+' props='+placed);
 '''
 output.parent.mkdir(parents=True,exist_ok=True)
 with tempfile.TemporaryDirectory() as tmp:

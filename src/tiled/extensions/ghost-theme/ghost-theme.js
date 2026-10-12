@@ -94,7 +94,7 @@ var GhostTheme = (function () {
     function wallMask(map) {
         var ground=layer(map,'Ground'),mask={};if(!ground||!ground.isTileLayer)throw new Error('缺少 Ground');
         for(var y=0;y<map.height;y++)for(var x=0;x<map.width;x++){
-            var t=ground.tileAt(x,y);if(t&&(t.tileset&&t.name==='map01'||t.tileset.name==='abandoned-map01')&&t.id>=8&&t.id<=41)mask[x+','+y]=true;
+            var t=ground.tileAt(x,y);if(t&&t.tileset&&(t.tileset.name==='map01'||t.tileset.name==='abandoned-map01')&&t.id>=8&&t.id<=41)mask[x+','+y]=true;
         }return mask;
     }
     function edges(map) {
@@ -104,38 +104,102 @@ var GhostTheme = (function () {
         var floors=[],fl=layer(map,'Floor');if(fl)fl.objects.forEach(function(o){if(o.polygon&&o.polygon.length)floors.push(o.polygon.map(function(p){return{x:p.x+o.x,y:p.y+o.y};}));});
         var keep=[];if(g)g.objects.forEach(function(o){if(o.property('ghost.locked')||o.property('ghost.generatedBy')!==OWNER)keep.push(bounds(o));});
         Object.keys(walls).sort().forEach(function(key){var xy=key.split(','),x=+xy[0],y=+xy[1];
-            [[0,-1],[1,0],[0,1],[-1,0]].forEach(function(d){var nx=x+d[0],ny=y+d[1];if(!roadAt(road,nx,ny,map))return;
+            // Each side uses a single cutout, overlapping at half-cell intervals.
+            // No bottom-facing edge: the reference only dresses top/left/right walls.
+            [[0,-1],[1,0],[-1,0]].forEach(function(d){
+                var nx=x+d[0],ny=y+d[1];if(!roadAt(road,nx,ny,map))return;
                 if(floors.some(function(p){return pointIn(p,(nx+.5)*100,(ny+.5)*100);}))return;
-                var o=object(ts,7,0,0,1,0);o.width=100;o.height=38;
-                if(d[1]===-1){o.x=x*100;o.y=y*100;}
-                else if(d[1]===1){o.x=(x+1)*100;o.y=(y+1)*100;o.rotation=180;}
-                else if(d[0]===1){o.x=(x+1)*100;o.y=y*100;o.rotation=90;}
-                else{o.x=x*100;o.y=(y+1)*100;o.rotation=270;}
-                var b=bounds(o);if(blocked.some(function(r){return overlap(b,r);})||keep.some(function(r){return overlap(b,r);}))return;result.push(o);
+                for(var slot=0;slot<2;slot++){
+                    var top=d[1]===-1,o=object(ts,top?7:8,0,0,1,0);
+                    if(top){
+                        o.width=68;o.height=38;o.x=x*100+slot*50-5;o.y=y*100+3;
+                    }else{
+                        o.width=58;o.height=76;o.x=d[0]<0?x*100-53:(x+1)*100-5;
+                        o.y=y*100+slot*50+66;o.tileFlippedHorizontally=d[0]>0;
+                    }
+                    o.setProperty('ghost.wallSide',top?'top':d[0]<0?'left':'right');
+                    var b=bounds(o);
+                    if(blocked.some(function(r){return overlap(b,r);})||keep.some(function(r){return overlap(b,r);}))continue;
+                    result.push(o);
+                }
             });
         });
         map.macro('沿墙铺设草垛',function(){g=group(map,'Edges');clearGenerated(g);result.forEach(function(o){g.addObject(o);});});return result.length;
     }
     function place(map,id,x,y,scale) {
         requireMap(map);if(map.property('ghost.theme')!=='abandoned-v1')throw new Error('请先应用废弃主题');
-        var ts=load(map,'abandoned-decorations.tsx'),o=object(ts,id,x,y,scale||1,0),b=bounds(o);
+        if(!isFinite(x)||!isFinite(y)||!isFinite(scale)||scale<=0||[9,10,11].indexOf(id)<0)
+            throw new Error('设备参数无效，请输入有效坐标和大于零的缩放');
+        var ts=load(map,'abandoned-decorations.tsx'),o=object(ts,id,x,y,scale,0),b=bounds(o);
         if(b.x<200||b.y<400||b.right>map.width*100-200||b.bottom>map.height*100-400)throw new Error('设备超出地图内侧安全区域');
         if(protectedRects(map).some(function(r){return overlap(b,r);}))throw new Error('设备与门口、功能点或建造区域冲突，请换一个位置');
         var props=layer(map,PREFIX+'Props');if(props&&props.objects.some(function(p){return overlap(b,bounds(p));}))throw new Error('设备与已有设备重叠');
         o.setProperty('ghost.locked',true);o.setProperty('ghost.visualOnly',true);
         map.macro('放置破旧设备',function(){var g=group(map,'Props');g.addObject(o);map.currentLayer=g;map.selectedObjects=[o];});return o;
     }
+    function reset(map, all) {
+        requireMap(map);
+        var targets=[];
+        ['Edges','Scatter','Props'].forEach(function(suffix){
+            var g=layer(map,PREFIX+suffix);if(!g)return;
+            if(!g.isObjectLayer)throw new Error(g.name+' 必须是对象层');
+            if(g.locked)throw new Error(g.name+' 已锁定，请先解锁图层');
+            g.objects.forEach(function(o){
+                if(all||(o.property('ghost.generatedBy')===OWNER&&!o.property('ghost.locked')))targets.push(o);
+            });
+        });
+        map.macro(all?'清空全部主题装饰':'重置未锁定自动装饰',function(){
+            targets.forEach(function(o){o.layer.removeObject(o);});
+        });
+        return targets.length;
+    }
+    // ScriptDialog has WA_DeleteOnClose. Snapshot widget values BEFORE accept().
+    function acceptValues(dialog, read, receive) {
+        return function(){receive(read());dialog.accept();};
+    }
     function message(text){var d=new Dialog('主题装饰');d.addLabel(text);d.addButton('关闭').clicked.connect(function(){d.accept();});d.exec();}
     function guarded(fn){return function(){try{fn(tiled.activeAsset);}catch(e){message(String(e.message||e));}};}
     function setupUI(){
         var a=tiled.registerAction('GhostTheme_Apply',guarded(applyTheme));a.text='应用废弃实验室主题（方形地图）';
-        a=tiled.registerAction('GhostTheme_Scatter',guarded(function(map){requireMap(map);var d=new Dialog('散布落叶 / 纸片 / 碎石');d.addLabel('有框选时仅重生成框选范围；锁定装饰保留。应用后可撤销。');var kind=d.addComboBox('素材',['混合','落叶','纸片','碎石']),den=d.addNumberInput('密度 %',12);den.minimum=1;den.maximum=60;var seed=d.addNumberInput('随机种子',Number(map.property('ghost.seed')||20261012));seed.minimum=0;seed.maximum=2147483647;seed.decimals=0;d.addButton('应用').clicked.connect(function(){d.accept();});d.addButton('取消').clicked.connect(function(){d.reject();});if(d.exec()===Dialog.Accepted)scatter(map,{seed:seed.value,density:den.value,category:['mixed','leaves','paper','rubble'][kind.currentIndex],region:region(map)});}));a.text='散布落叶、纸片、碎石…';
-        a=tiled.registerAction('GhostTheme_Edges',guarded(edges));a.text='沿房间外墙铺草垛';
-        a=tiled.registerAction('GhostTheme_Place',guarded(function(map){requireMap(map);var d=new Dialog('放置破旧设备');d.addLabel('本版为静态视觉设备，不改变通行。位置为图片左下角；放置后用选择对象工具拖动。');var choice=d.addComboBox('设备',['旧柜与箱子','破旧桶组','破旧设备']);var x=d.addNumberInput('X 像素',300),y=d.addNumberInput('Y 像素',700);x.maximum=map.width*100;y.maximum=map.height*100;var scale=d.addNumberInput('缩放',1);scale.minimum=.1;scale.maximum=3;scale.decimals=2;d.addButton('放置').clicked.connect(function(){d.accept();});d.addButton('取消').clicked.connect(function(){d.reject();});if(d.exec()===Dialog.Accepted)place(map,9+choice.currentIndex,x.value,y.value,scale.value);}));a.text='装配破旧设备…';
+        a=tiled.registerAction('GhostTheme_Scatter',guarded(function(map){
+            requireMap(map);var d=new Dialog('散布落叶 / 纸片 / 碎石'),values=null;
+            d.addLabel('有框选时仅重生成框选范围；锁定装饰保留。应用后可撤销。');
+            var kind=d.addComboBox('素材',['混合','落叶','纸片','碎石']);
+            var den=d.addNumberInput('密度 %',12);den.minimum=1;den.maximum=60;
+            var seed=d.addNumberInput('随机种子',Number(map.property('ghost.seed')||20261012));
+            seed.minimum=0;seed.maximum=2147483647;seed.decimals=0;seed.value=Number(map.property('ghost.seed')||20261012);
+            d.addButton('应用').clicked.connect(acceptValues(d,function(){
+                return {seed:seed.value,density:den.value,category:['mixed','leaves','paper','rubble'][kind.currentIndex],region:region(map)};
+            },function(v){values=v;}));
+            d.addButton('取消').clicked.connect(function(){d.reject();});
+            if(d.exec()===Dialog.Accepted&&values)scatter(map,values);
+        }));a.text='散布落叶、纸片、碎石…';
+        a=tiled.registerAction('GhostTheme_Edges',guarded(edges));a.text='沿左 / 右 / 上侧外墙铺草垛';
+        a=tiled.registerAction('GhostTheme_Place',guarded(function(map){
+            requireMap(map);var d=new Dialog('放置破旧设备'),values=null;
+            d.addLabel('静态视觉设备，不改变通行。位置为图片左下角；放置后可拖动。');
+            var choice=d.addComboBox('设备',['旧柜与箱子','破旧桶组','破旧设备']);
+            var x=d.addNumberInput('X 像素',300),y=d.addNumberInput('Y 像素',700);
+            x.maximum=map.width*100;y.maximum=map.height*100;x.value=300;y.value=700;
+            var scale=d.addNumberInput('缩放',1);scale.minimum=.1;scale.maximum=3;scale.decimals=2;
+            d.addButton('放置').clicked.connect(acceptValues(d,function(){
+                return {id:9+choice.currentIndex,x:x.value,y:y.value,scale:scale.value};
+            },function(v){values=v;}));
+            d.addButton('取消').clicked.connect(function(){d.reject();});
+            if(d.exec()===Dialog.Accepted&&values)place(map,values.id,values.x,values.y,values.scale);
+        }));a.text='装配破旧设备…';
+        a=tiled.registerAction('GhostTheme_Reset',guarded(function(map){
+            requireMap(map);var d=new Dialog('重置装饰物'),all=null;
+            d.addLabel('仅清理草垛、散布和设备层；保留背景、墙地及玩法数据。可撤销。');
+            var mode=d.addComboBox('范围',['未锁定的自动装饰（保留设备与锁定项）','全部主题装饰（含设备、锁定项和手工放置）']);
+            d.addButton('重置').clicked.connect(acceptValues(d,function(){return mode.currentIndex===1;},function(v){all=v;}));
+            d.addButton('取消').clicked.connect(function(){d.reject();});
+            if(d.exec()===Dialog.Accepted&&all!==null)reset(map,all);
+        }));a.text='重置装饰物…';
         a=tiled.registerAction('GhostTheme_Lock',guarded(function(map){requireMap(map);map.macro('锁定所选装饰',function(){map.selectedObjects.forEach(function(o){if(o.property('ghost.generatedBy')===OWNER)o.setProperty('ghost.locked',!o.property('ghost.locked'));});});}));a.text='锁定 / 解锁所选装饰';
-        tiled.extendMenu('GhostTools',[{separator:true},{action:'GhostTheme_Apply'},{action:'GhostTheme_Scatter'},{action:'GhostTheme_Edges'},{action:'GhostTheme_Place'},{action:'GhostTheme_Lock'}]);
+        tiled.extendMenu('GhostTools',[{separator:true},{action:'GhostTheme_Apply'},{action:'GhostTheme_Scatter'},{action:'GhostTheme_Edges'},{action:'GhostTheme_Place'},{action:'GhostTheme_Reset'},{action:'GhostTheme_Lock'}]);
     }
-    return {setResourceRoot:function(path){headlessRoot=path;},applyTheme:applyTheme,scatter:scatter,edges:edges,place:place,bounds:bounds,setupUI:setupUI};
+    return {reset:reset,acceptValues:acceptValues,setResourceRoot:function(path){headlessRoot=path;},applyTheme:applyTheme,scatter:scatter,edges:edges,place:place,bounds:bounds,setupUI:setupUI};
 }());
 // CLI scripts load the same implementation without requiring editor menus.
 if (typeof GhostThemeHeadless === 'undefined') {
