@@ -9,6 +9,10 @@ code+='''
 function assert(ok,text){if(!ok)throw new Error('ASSERT: '+text);}
 function find(map,name){return map.layers.filter(function(l){return l.name===name;})[0];}
 function snap(g){return JSON.stringify(g.objects.map(function(o){return [o.name,o.x,o.y,o.width,o.height,o.rotation];}));}
+var legacy=tiled.mapFormat('tmx').read(input.replace('Map_1.tmx','Map_1001.tmx'));
+GhostTheme.grass(legacy,20261012);
+assert(legacy.tilesets.some(function(t){return t&&t.name==='abandoned-decorations'&&t.tileCount>=19;}),'legacy embedded tileset not upgraded');
+assert(find(legacy,'GhostTheme_Base').objectAt(0).tile.id===0,'upgrade changed background tile');
 var map=tiled.mapFormat('tmx').read(input);
 GhostTheme.applyTheme(map);
 var n=map.layerCount;GhostTheme.applyTheme(map);assert(map.layerCount===n,'theme application duplicated layers');
@@ -24,7 +28,8 @@ assert(leafLayer.objects.some(function(o){return o.property('ghost.leafPlacement
 assert(leafLayer.objects.every(function(o){var b=GhostTheme.bounds(o),x=o.property('ghost.wallAnchorX'),y=o.property('ghost.wallAnchorY');return b.x<x&&x<b.right&&b.y<y&&y<b.bottom;}),'leaf sprite does not straddle its wall seam');
 var leavesSnapshot=snap(leafLayer);GhostTheme.roomLeaves(map,{mode:'both'});assert(leavesSnapshot===snap(leafLayer),'leaf generation not idempotent');
 assert(leafLayer.objects.every(function(o){return o.property('ghost.room').indexOf('floor_')===0;}),'leaf room identity absent');
-var sn=GhostTheme.scatter(map,opts),g=find(map,'GhostTheme_Scatter');assert(sn>10,'scatter absent');var first=snap(g);assert(g.objects.every(function(o){return o.tile.id>=3&&o.tile.id<=6;}),'room leaves still in scatter');
+var gn=GhostTheme.grass(map,20261012);assert(gn>0,'wall grass absent');var grassSnapshot=snap(find(map,'GhostTheme_Grass'));GhostTheme.grass(map,20261012);assert(grassSnapshot===snap(find(map,'GhostTheme_Grass')),'grass not reproducible');
+var sn=GhostTheme.scatter(map,opts),g=find(map,'GhostTheme_Scatter');assert(sn>10,'scatter absent');var first=snap(g);assert(g.objects.every(function(o){return (o.tile.id>=3&&o.tile.id<=6)||o.tile.id>=14;}),'room leaves still in scatter');
 GhostTheme.scatter(map,opts);assert(first===snap(g),'same seed changed geometry');
 opts.seed++;GhostTheme.scatter(map,opts);assert(first!==snap(g),'new seed did not change layout');
 var locked=g.objectAt(0);locked.setProperty('ghost.locked',true);var lockedID=locked.id,lx=locked.x,ly=locked.y;

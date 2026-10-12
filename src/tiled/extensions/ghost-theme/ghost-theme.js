@@ -12,9 +12,13 @@ var GhostTheme = (function () {
     }
     function load(map, file) {
         var path=FileInfo.cleanPath(FileInfo.joinPaths(headlessRoot || FileInfo.cleanPath(FileInfo.joinPaths(FileInfo.path(map.fileName),'..')),'Map_tsx',file));
-        for(var i=0;i<map.tilesets.length;i++)if(map.tilesets[i]&&(FileInfo.cleanPath(map.tilesets[i].fileName)===path||map.tilesets[i].name===file.replace('.tsx','')))return map.tilesets[i];
+        var existing=null;
+        for(var i=0;i<map.tilesets.length;i++)if(map.tilesets[i]&&(FileInfo.cleanPath(map.tilesets[i].fileName)===path||map.tilesets[i].name===file.replace('.tsx',''))){existing=map.tilesets[i];break;}
+        if(existing&&(file!=='abandoned-decorations.tsx'||existing.tileCount>=19))return existing;
         var format=tiled.tilesetFormatForFile(path);if(!format)throw new Error('无法读取图集 '+path);
-        var ts=format.read(path);if(ts)retainedTilesets.push(ts);if(!ts)throw new Error('缺少主题素材，请先安装 ghost-config 主题包：'+path);return ts;
+        var ts=format.read(path);if(ts)retainedTilesets.push(ts);if(!ts)throw new Error('缺少主题素材，请先安装 ghost-config 主题包：'+path);
+        if(existing)map.macro('更新装饰素材库',function(){if(!map.replaceTileset(existing,ts))throw new Error('更新装饰图集失败');});
+        return ts;
     }
     function group(map, suffix) {
         var name=PREFIX+suffix,g=layer(map,name);
@@ -47,7 +51,7 @@ var GhostTheme = (function () {
             var base=layer(map,PREFIX+'Base');
             if(!base){base=new ObjectGroup(PREFIX+'Base');base.drawOrder=ObjectGroup.IndexOrder;map.insertLayerAt(0,base);var bg=object(decor,0,0,map.height*100,1,0);bg.width=map.width*100;bg.height=map.height*100;base.addObject(bg);}
             base.locked=true;map.setProperty('ghost.theme','abandoned-v1');
-            group(map,'Edges');group(map,'Scatter');group(map,'Props');group(map,'RoomLeaves');
+            group(map,'Edges');group(map,'Scatter');group(map,'Props');group(map,'RoomLeaves');group(map,'Grass');
         });
     }
     function rng(seed) {var n=seed>>>0;return function(){n=(Math.imul(n,1664525)+1013904223)>>>0;return n/4294967296;};}
@@ -74,14 +78,14 @@ var GhostTheme = (function () {
         var road=layer(map,'Road');if(!road||!road.isTileLayer)throw new Error('缺少 Road 瓦片层');
         var ts=load(map,'abandoned-decorations.tsx'),g=layer(map,PREFIX+'Scatter'),area=options.region||null,random=rng(options.seed),blocked=protectedRects(map),keep=[];
         if(g&&g.locked)throw new Error('散布图层已锁定');
-        ['Props','Edges','RoomLeaves','Scatter'].forEach(function(s){var l=layer(map,PREFIX+s);if(l)l.objects.forEach(function(o){if(s!=='Scatter'||o.property('ghost.locked')||o.property('ghost.generatedBy')!==OWNER||(area&&!intersects(o,area)))keep.push(bounds(o));});});
-        var result=[],ids=options.category==='paper'?[3,4]:options.category==='rubble'?[5,6]:[3,4,5,6];
+        ['Props','Edges','RoomLeaves','Grass','Scatter'].forEach(function(s){var l=layer(map,PREFIX+s);if(l)l.objects.forEach(function(o){if(s!=='Scatter'||o.property('ghost.locked')||o.property('ghost.generatedBy')!==OWNER||(area&&!intersects(o,area)))keep.push(bounds(o));});});
+        var result=[],ids=options.category==='paper'?[3,4,16,17,18]:options.category==='rubble'?[5,6]:options.category==='small-leaf'?[14,15]:[14,14,15,15,16,17,18,3,4,5,6];
         for(var y=0;y<map.height;y++)for(var x=0;x<map.width;x++) {
             if(!roadAt(road,x,y,map))continue;
             var edge=!roadAt(road,x-1,y,map)||!roadAt(road,x+1,y,map)||!roadAt(road,x,y-1,map)||!roadAt(road,x,y+1,map);
             if(random()>(options.density/100)*(edge?1.8:.45))continue;
             var id=ids[Math.floor(random()*ids.length)],scale=.45+random()*.45;
-            var o=object(ts,id,(x+.15+random()*.7)*100,(y+.3+random()*.6)*100,scale,(id===3||id===4)?(random()-.5)*80:0),b=bounds(o);
+            var o=object(ts,id,(x+.15+random()*.7)*100,(y+.3+random()*.6)*100,scale,(id===3||id===4||id>=14)?(random()-.5)*80:0),b=bounds(o);
             if(b.x<200||b.y<400||b.right>map.width*100-200||b.bottom>map.height*100-400)continue;
             if(area&&(b.x<area.x||b.y<area.y||b.right>area.right||b.bottom>area.bottom))continue;
             if(blocked.some(function(r){return overlap(b,r);})||keep.some(function(r){return overlap(b,r,12);}))continue;
@@ -189,6 +193,29 @@ var GhostTheme = (function () {
         });
         return results.length;
     }
+    function grass(map,seed) {
+        requireMap(map);if(map.property('ghost.theme')!=='abandoned-v1')throw new Error('请先应用主题');
+        var ts=load(map,'abandoned-decorations.tsx'),walls=wallMask(map),road=layer(map,'Road'),g=layer(map,PREFIX+'Grass');
+        if(!road||!road.isTileLayer)throw new Error('缺少 Road');if(g&&g.locked)throw new Error('小草图层已锁定');
+        var random=rng(seed||20261012),blocked=protectedRects(map,false),keep=[],result=[];
+        ['Props','RoomLeaves','Grass'].forEach(function(suffix){var l=layer(map,PREFIX+suffix);if(l)l.objects.forEach(function(o){
+            if(suffix!=='Grass'||o.property('ghost.locked')||o.property('ghost.generatedBy')!==OWNER)keep.push(bounds(o));
+        });});
+        Object.keys(walls).sort().forEach(function(key){var xy=key.split(','),x=+xy[0],y=+xy[1];
+            [[0,-1],[1,0],[0,1],[-1,0]].forEach(function(d){
+                if(!roadAt(road,x+d[0],y+d[1],map)||random()>.22)return;
+                var o=object(ts,random()<.5?12:13,0,0,.65+random()*.25,0);
+                var along=25+random()*50;
+                // Keep blades upright; place the root at the wall seam, without rotating the grass.
+                if(d[0]){o.x=(d[0]>0?(x+1)*100-5:x*100-o.width+5);o.y=y*100+along;}
+                else{o.x=x*100+along-o.width/2;o.y=d[1]>0?(y+1)*100+o.height-8:y*100+5;}
+                var b=bounds(o);if(blocked.some(function(r){return overlap(b,r);})||keep.some(function(r){return overlap(b,r,30);}))return;
+                o.setProperty('ghost.wallSide',d[0]<0?'left':d[0]>0?'right':d[1]<0?'top':'bottom');
+                result.push(o);keep.push(b);
+            });
+        });
+        map.macro('点缀墙根小草',function(){g=group(map,'Grass');clearGenerated(g);result.forEach(function(o){g.addObject(o);});});return result.length;
+    }
     function place(map,id,x,y,scale) {
         requireMap(map);if(map.property('ghost.theme')!=='abandoned-v1')throw new Error('请先应用废弃主题');
         if(!isFinite(x)||!isFinite(y)||!isFinite(scale)||scale<=0||[9,10,11].indexOf(id)<0)
@@ -203,7 +230,7 @@ var GhostTheme = (function () {
     function reset(map, all) {
         requireMap(map);
         var targets=[];
-        ['Edges','Scatter','RoomLeaves','Props'].forEach(function(suffix){
+        ['Edges','Scatter','RoomLeaves','Grass','Props'].forEach(function(suffix){
             var g=layer(map,PREFIX+suffix);if(!g)return;
             if(!g.isObjectLayer)throw new Error(g.name+' 必须是对象层');
             if(g.locked)throw new Error(g.name+' 已锁定，请先解锁图层');
@@ -239,11 +266,12 @@ var GhostTheme = (function () {
         d.addLabel('贴墙根接缝，角落压住两侧墙脚；不吸附地面格子。');
         var leafMode=d.addComboBox('位置',['贴墙 + 角落','仅贴墙','仅角落']);
         button('贴墙根布置叶堆',function(m){return '已布置 '+roomLeaves(m,{mode:['both','edge','corner'][leafMode.currentIndex]})+' 处室内叶堆';});
+        button('点缀墙根小草',function(m){return '已放置 '+grass(m,20261012)+' 丛小草';});
         d.addHeading('地面碎片');
-        var kind=d.addComboBox('素材',['纸片 + 碎石','纸片','碎石']);
+        var kind=d.addComboBox('素材',['小落叶 + 纸屑 + 碎石','纸片 / 纸屑','碎石','零散小落叶']);
         var density=d.addNumberInput('密度 %',12);density.minimum=1;density.maximum=60;
         var seed=d.addNumberInput('随机种子',1);seed.minimum=0;seed.maximum=2147483647;seed.decimals=0;seed.value=20261012;
-        button('散布碎片',function(m){return '已散布 '+scatter(m,{seed:seed.value,density:density.value,category:['mixed','paper','rubble'][kind.currentIndex],region:region(m)})+' 处碎片';});
+        button('散布碎片',function(m){return '已散布 '+scatter(m,{seed:seed.value,density:density.value,category:['mixed','paper','rubble','small-leaf'][kind.currentIndex],region:region(m)})+' 处碎片';});
         d.addHeading('破旧设备');
         var device=d.addComboBox('设备',['旧柜与箱子','破旧桶组','破旧设备']);
         var x=d.addNumberInput('X（左下角）',0),y=d.addNumberInput('Y（左下角）',0),scale=d.addNumberInput('缩放',1);
@@ -260,7 +288,7 @@ var GhostTheme = (function () {
         var action=tiled.registerAction('GhostTheme_Panel',openPanel);action.text='地图装饰面板…';
         tiled.extendMenu('GhostTools',[{separator:true},{action:'GhostTheme_Panel'}]);
     }
-    return {roomLeaves:roomLeaves,openPanel:openPanel,reset:reset,acceptValues:acceptValues,setResourceRoot:function(path){headlessRoot=path;},applyTheme:applyTheme,scatter:scatter,edges:edges,place:place,bounds:bounds,setupUI:setupUI};
+    return {grass:grass,roomLeaves:roomLeaves,openPanel:openPanel,reset:reset,acceptValues:acceptValues,setResourceRoot:function(path){headlessRoot=path;},applyTheme:applyTheme,scatter:scatter,edges:edges,place:place,bounds:bounds,setupUI:setupUI};
 }());
 // CLI scripts load the same implementation without requiring editor menus.
 if (typeof GhostThemeHeadless === 'undefined') {
