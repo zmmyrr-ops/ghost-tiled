@@ -40,3 +40,11 @@ python3 tests/ghost-theme/run.py --tiled /path/to/Tiled --config-root /path/to/g
 新增 ID 12–18：两款草、两款单片小落叶、三款纸屑，均裁自参考设计 JPG 并清除连通地面底色。原 ID 0–11 不变。旧内嵌图集在使用工具时自动升级，保留已有实例。
 
 统一面板新增“点缀墙根小草”；碎片素材可选混合、纸片/纸屑、碎石、零散小落叶。小草保持直立沿墙根点缀，室内叶堆继续由独立墙根规则生成。新增 GhostTheme_Grass 图层已支持重置、锁定和静态导出。
+
+
+## 正式秋季资源
+
+已导入 Desktop/秋季装饰元素 下的正式 PNG 资源，并用 Desktop/map03.png 直接替换主题墙地图集。正式图集使用 abandoned-map03-formal.tsx 与 abandoned-decorations-formal.tsx；保留原局部编号和装饰操作接口。试用样板 outputs/正式资源样板.png 已通过真实 Tiled 脚本加载与静态烘焙。
+
+
+正式布局审查结论：设计稿采用“外围边界装饰 + 房间边缘装饰 + 少量中心碎片”的三级密度。墙外草垛只在上/左/右侧连续铺设，下侧留空；草垛遇门口或道路断开。墙根小草只补空档，最小间距 180 像素，避免与草垛连续重叠。室内叶堆只在 Floor 内墙根和角落，并压住墙脚 24 像素，避开 Door/Bed/Born/Supply。碎片按 1–3 个簇分布，边缘权重高于中心；设备附近提高碎片概率，房间中心保持空旷。正式规则配置见 decoration-rules-formal.json。

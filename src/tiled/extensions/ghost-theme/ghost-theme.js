@@ -3,7 +3,7 @@
  */
 var GhostTheme = (function () {
     'use strict';
-    var PREFIX = 'GhostTheme_', OWNER = 'ghost-theme-v1', headlessRoot = null, retainedTilesets = [];
+    var PREFIX = 'GhostTheme_', OWNER = 'ghost-theme-v1', FORMAL_RULE_VERSION = 'autumn-formal-v1', headlessRoot = null, retainedTilesets = [];
     function layer(map, name) { for (var i=0;i<map.layerCount;i++) if(map.layerAt(i).name===name)return map.layerAt(i); return null; }
     function requireMap(map) {
         if(!map || !map.isTileMap)throw new Error('请先打开并保存地图');
@@ -50,7 +50,7 @@ var GhostTheme = (function () {
             }
             var base=layer(map,PREFIX+'Base');
             if(!base){base=new ObjectGroup(PREFIX+'Base');base.drawOrder=ObjectGroup.IndexOrder;map.insertLayerAt(0,base);var bg=object(decor,0,0,map.height*100,1,0);bg.width=map.width*100;bg.height=map.height*100;base.addObject(bg);}
-            base.locked=true;map.setProperty('ghost.theme','abandoned-v1');
+            base.locked=true;map.setProperty('ghost.theme','abandoned-v1');map.setProperty('ghost.decorationRules',FORMAL_RULE_VERSION);
             group(map,'Edges');group(map,'Scatter');group(map,'Props');group(map,'RoomLeaves');group(map,'Grass');
         });
     }
@@ -74,6 +74,7 @@ var GhostTheme = (function () {
     function clearGenerated(g,region){g.objects.slice().forEach(function(o){if(o.property('ghost.generatedBy')===OWNER&&!o.property('ghost.locked')&&(!region||intersects(o,region)))g.removeObject(o);});}
     function region(map){var b=map.selectedArea.boundingRect;if(!b||b.width<=0||b.height<=0)return null;return {x:b.x*100,y:b.y*100,right:(b.x+b.width)*100,bottom:(b.y+b.height)*100};}
     function scatter(map,options) {
+        // Formal scatter is biased toward edges and prop halos; callers should use small density values.
         requireMap(map);if(map.property('ghost.theme')!=='abandoned-v1')throw new Error('请先应用废弃主题');
         var road=layer(map,'Road');if(!road||!road.isTileLayer)throw new Error('缺少 Road 瓦片层');
         var ts=load(map,'abandoned-decorations-formal.tsx'),g=layer(map,PREFIX+'Scatter'),area=options.region||null,random=rng(options.seed),blocked=protectedRects(map),keep=[];
@@ -102,6 +103,7 @@ var GhostTheme = (function () {
         }return mask;
     }
     function edges(map) {
+        // Formal layout: top/left/right only; the bottom perimeter is intentionally empty.
         requireMap(map);if(map.property('ghost.theme')!=='abandoned-v1')throw new Error('请先应用废弃主题');
         var road=layer(map,'Road'),ts=load(map,'abandoned-decorations-formal.tsx'),walls=wallMask(map),blocked=protectedRects(map),g=layer(map,PREFIX+'Edges'),result=[];
         if(!road||!road.isTileLayer)throw new Error('缺少 Road');if(g&&g.locked)throw new Error('墙边图层已锁定');
@@ -194,6 +196,7 @@ var GhostTheme = (function () {
         return results.length;
     }
     function grass(map,seed) {
+        // Grass fills occasional gaps between hay runs; it never creates a second continuous border.
         requireMap(map);if(map.property('ghost.theme')!=='abandoned-v1')throw new Error('请先应用主题');
         var ts=load(map,'abandoned-decorations-formal.tsx'),walls=wallMask(map),road=layer(map,'Road'),g=layer(map,PREFIX+'Grass');
         if(!road||!road.isTileLayer)throw new Error('缺少 Road');if(g&&g.locked)throw new Error('小草图层已锁定');
@@ -261,12 +264,12 @@ var GhostTheme = (function () {
         function button(label,fn){d.addButton(label).clicked.connect(run(fn));}
         d.addHeading('主题与墙外草垛');
         button('应用废弃主题',function(m){applyTheme(m);return '主题已应用';});
-        button('生成墙外草垛（左 / 右 / 上）',function(m){return '已生成 '+edges(m)+' 个草垛';});
+        button('生成墙外草垛（上 / 左 / 右）',function(m){return '已生成 '+edges(m)+' 个草垛';});
         d.addHeading('墙根叶堆');
         d.addLabel('贴墙根接缝，角落压住两侧墙脚；不吸附地面格子。');
         var leafMode=d.addComboBox('位置',['贴墙 + 角落','仅贴墙','仅角落']);
         button('贴墙根布置叶堆',function(m){return '已布置 '+roomLeaves(m,{mode:['both','edge','corner'][leafMode.currentIndex]})+' 处室内叶堆';});
-        button('点缀墙根小草',function(m){return '已放置 '+grass(m,20261012)+' 丛小草';});
+        button('点缀墙根小草（稀疏空档）',function(m){return '已放置 '+grass(m,20261012)+' 丛小草';});
         d.addHeading('地面碎片');
         var kind=d.addComboBox('素材',['小落叶 + 纸屑 + 碎石','纸片 / 纸屑','碎石','零散小落叶']);
         var density=d.addNumberInput('密度 %',12);density.minimum=1;density.maximum=60;
