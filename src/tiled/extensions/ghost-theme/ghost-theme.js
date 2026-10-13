@@ -33,9 +33,9 @@ var GhostTheme = (function () {
     }
     function applyTheme(map) {
         requireMap(map);
-        var walls=load(map,'abandoned-map01.tsx'),decor=load(map,'abandoned-decorations.tsx');
-        var old=map.tilesets.filter(function(t){return t&&t.name==='map01';});
-        if(!old.length && !map.tilesets.some(function(t){return t&&t.name==='abandoned-map01';}))throw new Error('未找到 map01 图集，暂不自动替换其他主题');
+        var walls=load(map,'abandoned-map03-formal.tsx'),decor=load(map,'abandoned-decorations-formal.tsx');
+        var old=map.tilesets.filter(function(t){return t&&(t.name==='map01'||t.name==='abandoned-map01'||t.name==='abandoned-map03-formal');});
+        if(!old.length && !map.tilesets.some(function(t){return t&&(t.name==='abandoned-map01'||t.name==='abandoned-map03-formal');}))throw new Error('未找到 map01 图集，暂不自动替换其他主题');
         if(map.width!==map.height)throw new Error('整张参考底图只适配正方形地图；长方形地图需先制作对应比例底图');
         map.macro('应用废弃实验室主题',function(){
             old.forEach(function(t){if(!map.replaceTileset(t,walls))throw new Error('替换图集失败');});map.addTileset(decor);
@@ -76,7 +76,7 @@ var GhostTheme = (function () {
     function scatter(map,options) {
         requireMap(map);if(map.property('ghost.theme')!=='abandoned-v1')throw new Error('请先应用废弃主题');
         var road=layer(map,'Road');if(!road||!road.isTileLayer)throw new Error('缺少 Road 瓦片层');
-        var ts=load(map,'abandoned-decorations.tsx'),g=layer(map,PREFIX+'Scatter'),area=options.region||null,random=rng(options.seed),blocked=protectedRects(map),keep=[];
+        var ts=load(map,'abandoned-decorations-formal.tsx'),g=layer(map,PREFIX+'Scatter'),area=options.region||null,random=rng(options.seed),blocked=protectedRects(map),keep=[];
         if(g&&g.locked)throw new Error('散布图层已锁定');
         ['Props','Edges','RoomLeaves','Grass','Scatter'].forEach(function(s){var l=layer(map,PREFIX+s);if(l)l.objects.forEach(function(o){if(s!=='Scatter'||o.property('ghost.locked')||o.property('ghost.generatedBy')!==OWNER||(area&&!intersects(o,area)))keep.push(bounds(o));});});
         var result=[],ids=options.category==='paper'?[3,4,16,17,18]:options.category==='rubble'?[5,6]:options.category==='small-leaf'?[14,15]:[14,14,15,15,16,17,18,3,4,5,6];
@@ -98,12 +98,12 @@ var GhostTheme = (function () {
     function wallMask(map) {
         var ground=layer(map,'Ground'),mask={};if(!ground||!ground.isTileLayer)throw new Error('缺少 Ground');
         for(var y=0;y<map.height;y++)for(var x=0;x<map.width;x++){
-            var t=ground.tileAt(x,y);if(t&&t.tileset&&(t.tileset.name==='map01'||t.tileset.name==='abandoned-map01')&&t.id>=8&&t.id<=41)mask[x+','+y]=true;
+            var t=ground.tileAt(x,y);if(t&&t.tileset&&(t.tileset.name==='map01'||t.tileset.name==='abandoned-map01'||t.tileset.name==='abandoned-map03-formal')&&t.id>=8&&t.id<=41)mask[x+','+y]=true;
         }return mask;
     }
     function edges(map) {
         requireMap(map);if(map.property('ghost.theme')!=='abandoned-v1')throw new Error('请先应用废弃主题');
-        var road=layer(map,'Road'),ts=load(map,'abandoned-decorations.tsx'),walls=wallMask(map),blocked=protectedRects(map),g=layer(map,PREFIX+'Edges'),result=[];
+        var road=layer(map,'Road'),ts=load(map,'abandoned-decorations-formal.tsx'),walls=wallMask(map),blocked=protectedRects(map),g=layer(map,PREFIX+'Edges'),result=[];
         if(!road||!road.isTileLayer)throw new Error('缺少 Road');if(g&&g.locked)throw new Error('墙边图层已锁定');
         var floors=[],fl=layer(map,'Floor');if(fl)fl.objects.forEach(function(o){if(o.polygon&&o.polygon.length)floors.push(o.polygon.map(function(p){return{x:p.x+o.x,y:p.y+o.y};}));});
         var keep=[];if(g)g.objects.forEach(function(o){if(o.property('ghost.locked')||o.property('ghost.generatedBy')!==OWNER)keep.push(bounds(o));});
@@ -135,7 +135,7 @@ var GhostTheme = (function () {
         if(map.property('ghost.theme')!=='abandoned-v1')throw new Error('请先应用主题');
         options=options||{mode:'both'};
         var floors=layer(map,'Floor');if(!floors||!floors.isObjectLayer)throw new Error('缺少 Floor 房间地面区域');
-        var ts=load(map,'abandoned-decorations.tsx'),walls=wallMask(map),g=layer(map,PREFIX+'RoomLeaves');
+        var ts=load(map,'abandoned-decorations-formal.tsx'),walls=wallMask(map),g=layer(map,PREFIX+'RoomLeaves');
         if(g&&g.locked)throw new Error('室内叶堆图层已锁定');
         var blocked=protectedRects(map,false),occupied=[],results=[];
         ['Props','RoomLeaves'].forEach(function(suffix){var l=layer(map,PREFIX+suffix);if(l)l.objects.forEach(function(o){
@@ -195,7 +195,7 @@ var GhostTheme = (function () {
     }
     function grass(map,seed) {
         requireMap(map);if(map.property('ghost.theme')!=='abandoned-v1')throw new Error('请先应用主题');
-        var ts=load(map,'abandoned-decorations.tsx'),walls=wallMask(map),road=layer(map,'Road'),g=layer(map,PREFIX+'Grass');
+        var ts=load(map,'abandoned-decorations-formal.tsx'),walls=wallMask(map),road=layer(map,'Road'),g=layer(map,PREFIX+'Grass');
         if(!road||!road.isTileLayer)throw new Error('缺少 Road');if(g&&g.locked)throw new Error('小草图层已锁定');
         var random=rng(seed||20261012),blocked=protectedRects(map,false),keep=[],result=[];
         ['Props','RoomLeaves','Grass'].forEach(function(suffix){var l=layer(map,PREFIX+suffix);if(l)l.objects.forEach(function(o){
@@ -220,7 +220,7 @@ var GhostTheme = (function () {
         requireMap(map);if(map.property('ghost.theme')!=='abandoned-v1')throw new Error('请先应用废弃主题');
         if(!isFinite(x)||!isFinite(y)||!isFinite(scale)||scale<=0||[9,10,11].indexOf(id)<0)
             throw new Error('设备参数无效，请输入有效坐标和大于零的缩放');
-        var ts=load(map,'abandoned-decorations.tsx'),o=object(ts,id,x,y,scale,0),b=bounds(o);
+        var ts=load(map,'abandoned-decorations-formal.tsx'),o=object(ts,id,x,y,scale,0),b=bounds(o);
         if(b.x<200||b.y<400||b.right>map.width*100-200||b.bottom>map.height*100-400)throw new Error('设备超出地图内侧安全区域');
         if(protectedRects(map).some(function(r){return overlap(b,r);}))throw new Error('设备与门口、功能点或建造区域冲突，请换一个位置');
         var props=layer(map,PREFIX+'Props');if(props&&props.objects.some(function(p){return overlap(b,bounds(p));}))throw new Error('设备与已有设备重叠');
