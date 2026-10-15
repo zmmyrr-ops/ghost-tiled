@@ -35,24 +35,24 @@ Module {
     property string qmlImportScannerName: "qmlimportscanner"
     property string qmlImportScannerFilePath: qmlLibExecPath + '/' + qmlImportScannerName
 
-    version: "6.11.1"
-    property stringList architectures: ["x86_64"]
+    version: "6.11.2"
+    property stringList architectures: ["arm64"]
     property string targetPlatform: "macos"
     property string libInfix: ""
-    property stringList config: ["release","shared","qt_framework","plugin_manifest","intelcet","trivial_auto_var_init_pattern","stack_protector","libcpp_hardening"]
+    property stringList config: ["release","shared","qt_framework","plugin_manifest","trivial_auto_var_init_pattern","stack_protector","libcpp_hardening"]
     property stringList qtConfig: ["shared","rpath","qt_framework","reduce_exports","openssl","release"]
-    readonly property stringList enabledFeatures: ["version_tagging","shared","pkg-config","rpath","framework","signaling_nan","zstd","thread","future","concurrent","dbus","openssl-linked","opensslv30","test_gui","test_squish","shared","intelcet","trivial_auto_var_init_pattern","stack_protector","libcpp_hardening","shared","rpath","reduce_exports","openssl"]
+    readonly property stringList enabledFeatures: ["version_tagging","shared","pkg-config","rpath","framework","signaling_nan","zstd","thread","future","concurrent","dbus","openssl-linked","opensslv30","test_gui","test_squish","shared","trivial_auto_var_init_pattern","stack_protector","libcpp_hardening","shared","rpath","reduce_exports","openssl"]
     readonly property stringList disabledFeatures: ["static","cross_compile","debug_and_release","separate_debug_info","appstore-compliant","simulator_and_device","force_asserts","c++20","c++2a","c++2b","c++2c","reduce_relocations","wasm-simd128","wasm-exceptions","wasm-jspi","opensslv11","release","build_all"]
-    property path binPath: "/usr/local/bin"
-    property path installPath: "/usr/local/bin"
-    property path incPath: "/usr/local/include"
-    property path libPath: "/usr/local/lib"
-    property path installPrefixPath: "/usr/local"
-    property path libExecPath: "/usr/local/share/qt/libexec"
-    property path qmlLibExecPath: "/usr/local/share/qt/libexec"
-    property path pluginPath: "/usr/local/share/qt/plugins"
+    property path binPath: "/opt/homebrew/bin"
+    property path installPath: "/opt/homebrew/bin"
+    property path incPath: "/opt/homebrew/include"
+    property path libPath: "/opt/homebrew/lib"
+    property path installPrefixPath: "/opt/homebrew"
+    property path libExecPath: "/opt/homebrew/share/qt/libexec"
+    property path qmlLibExecPath: "/opt/homebrew/share/qt/libexec"
+    property path pluginPath: "/opt/homebrew/share/qt/plugins"
     property string mkspecName: "macx-clang"
-    property path mkspecPath: "/usr/local/share/qt/mkspecs/macx-clang"
+    property path mkspecPath: "/opt/homebrew/share/qt/mkspecs/macx-clang"
     property string mocName: "moc"
     property stringList mocFlags: []
     property string lreleaseName: "lrelease"
@@ -60,9 +60,9 @@ Module {
     property string rccName: "rcc"
     property string qdocName: versionMajor >= 5 ? "qdoc" : "qdoc3"
     property stringList qdocEnvironment
-    property path docPath: "/usr/local/share/qt/doc"
-    property path translationsPath: "/usr/local/share/qt/translations"
-    property string helpGeneratorLibExecPath: "/usr/local/share/qt/libexec"
+    property path docPath: "/opt/homebrew/share/qt/doc"
+    property path translationsPath: "/opt/homebrew/share/qt/translations"
+    property string helpGeneratorLibExecPath: "/opt/homebrew/share/qt/libexec"
     property stringList helpGeneratorArgs: versionMajor >= 5 ? ["-platform", "minimal"] : []
     property var versionParts: version ? version.split('.').map(function(item) { return parseInt(item, 10); }) : []
     property int versionMajor: versionParts[0]
@@ -112,7 +112,7 @@ Module {
     property string libNameForLinker: qtBuildVariant === "debug"
                                       ? libNameForLinkerDebug : libNameForLinkerRelease
     property string libFilePathDebug: undefined
-    property string libFilePathRelease: "/usr/local/lib/QtCore.framework/QtCore"
+    property string libFilePathRelease: "/opt/homebrew/lib/QtCore.framework/QtCore"
     property string libFilePath: qtBuildVariant === "debug"
                                       ? libFilePathDebug : libFilePathRelease
     property bool useRPaths: qbs.targetOS.contains("linux") && !qbs.targetOS.contains("android")
@@ -177,7 +177,7 @@ Module {
         return flags;
     }
     cpp.includePaths: generatedHeadersDir
-    cpp.systemIncludePaths: ["/usr/local/lib/QtCore.framework/Headers"].concat(mkspecPath)
+    cpp.systemIncludePaths: ["/opt/homebrew/lib/QtCore.framework/Headers"].concat(mkspecPath)
     cpp.libraryPaths: {
         var libPaths = [libPath];
         if (staticBuild && pluginPath)
@@ -485,7 +485,7 @@ Module {
     }
 
     Group {
-        files: "/usr/local/share/qt/metatypes/qt6core_metatypes.json"
+        files: "/opt/homebrew/share/qt/metatypes/qt6core_metatypes.json"
         filesAreTargets: true
         fileTags: ["qt.core.metatypes"]
     }

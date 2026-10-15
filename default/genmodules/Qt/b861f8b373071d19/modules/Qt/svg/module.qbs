@@ -2,8 +2,8 @@ QtModule {
     qtModuleName: "Svg"
     Depends { name: "Qt"; submodules: ["core","gui"]}
 
-    version: "6.11.1"
-    architectures: ["x86_64"]
+    version: "6.11.2"
+    architectures: ["arm64"]
     targetPlatform: "macos"
     hasLibrary: true
     staticLibsDebug: []
@@ -15,19 +15,19 @@ QtModule {
     frameworksDebug: []
     frameworksRelease: ["QtGui","QtCore","IOKit","DiskArbitration","UniformTypeIdentifiers","AppKit","OpenGL","ImageIO","Metal"]
     frameworkPathsDebug: []
-    frameworkPathsRelease: ["/usr/local/lib"]
+    frameworkPathsRelease: ["/opt/homebrew/lib"]
     libNameForLinkerDebug: "QtSvg"
     libNameForLinkerRelease: "QtSvg"
     libFilePathDebug: undefined
-    libFilePathRelease: "/usr/local/lib/QtSvg.framework/QtSvg"
+    libFilePathRelease: "/opt/homebrew/lib/QtSvg.framework/QtSvg"
     pluginTypes: []
     moduleConfig: ["shared","lib_bundle"]
     cpp.defines: ["QT_SVG_LIB"]
-    cpp.systemIncludePaths: ["/usr/local/lib/QtSvg.framework/Headers"]
+    cpp.systemIncludePaths: ["/opt/homebrew/lib/QtSvg.framework/Headers"]
     cpp.libraryPaths: []
     isFramework: true
     Group {
-        files: "/usr/local/share/qt/metatypes/qt6svg_metatypes.json"
+        files: "/opt/homebrew/share/qt/metatypes/qt6svg_metatypes.json"
         filesAreTargets: true
         fileTags: ["qt.core.metatypes"]
     }

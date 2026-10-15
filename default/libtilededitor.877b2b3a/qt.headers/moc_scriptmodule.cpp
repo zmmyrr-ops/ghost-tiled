@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'scriptmodule.h'
 **
-** Created by: The Qt Meta Object Compiler version 69 (Qt 6.11.1)
+** Created by: The Qt Meta Object Compiler version 69 (Qt 6.11.2)
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
@@ -19,7 +19,7 @@
 #if !defined(Q_MOC_OUTPUT_REVISION)
 #error "The header file 'scriptmodule.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 69
-#error "This file was generated using the moc from 6.11.1. It"
+#error "This file was generated using the moc from 6.11.2. It"
 #error "cannot be used with the include files from this version of Qt."
 #error "(The moc has changed too much.)"
 #endif
@@ -137,6 +137,8 @@ template <> constexpr inline auto Tiled::ScriptModule::qt_create_metaobjectdata<
         "unloadWorld",
         "unloadAllWorlds",
         "version",
+        "tiledVersion",
+        "ghostVersion",
         "qtVersion",
         "platform",
         "arch",
@@ -447,49 +449,53 @@ template <> constexpr inline auto Tiled::ScriptModule::qt_create_metaobjectdata<
     QtMocHelpers::UintData qt_properties {
         // property 'version'
         QtMocHelpers::PropertyData<QString>(97, QMetaType::QString, QMC::DefaultPropertyFlags),
-        // property 'qtVersion'
+        // property 'tiledVersion'
         QtMocHelpers::PropertyData<QString>(98, QMetaType::QString, QMC::DefaultPropertyFlags),
-        // property 'platform'
+        // property 'ghostVersion'
         QtMocHelpers::PropertyData<QString>(99, QMetaType::QString, QMC::DefaultPropertyFlags),
-        // property 'arch'
+        // property 'qtVersion'
         QtMocHelpers::PropertyData<QString>(100, QMetaType::QString, QMC::DefaultPropertyFlags),
-        // property 'extensionsPath'
+        // property 'platform'
         QtMocHelpers::PropertyData<QString>(101, QMetaType::QString, QMC::DefaultPropertyFlags),
-        // property 'applicationDirPath'
+        // property 'arch'
         QtMocHelpers::PropertyData<QString>(102, QMetaType::QString, QMC::DefaultPropertyFlags),
-        // property 'projectFilePath'
+        // property 'extensionsPath'
         QtMocHelpers::PropertyData<QString>(103, QMetaType::QString, QMC::DefaultPropertyFlags),
+        // property 'applicationDirPath'
+        QtMocHelpers::PropertyData<QString>(104, QMetaType::QString, QMC::DefaultPropertyFlags),
+        // property 'projectFilePath'
+        QtMocHelpers::PropertyData<QString>(105, QMetaType::QString, QMC::DefaultPropertyFlags),
         // property 'scriptArguments'
-        QtMocHelpers::PropertyData<QStringList>(104, QMetaType::QStringList, QMC::DefaultPropertyFlags),
-        // property 'actions'
-        QtMocHelpers::PropertyData<QStringList>(105, QMetaType::QStringList, QMC::DefaultPropertyFlags),
-        // property 'menus'
         QtMocHelpers::PropertyData<QStringList>(106, QMetaType::QStringList, QMC::DefaultPropertyFlags),
-        // property 'mapFormats'
+        // property 'actions'
         QtMocHelpers::PropertyData<QStringList>(107, QMetaType::QStringList, QMC::DefaultPropertyFlags),
-        // property 'tilesetFormats'
+        // property 'menus'
         QtMocHelpers::PropertyData<QStringList>(108, QMetaType::QStringList, QMC::DefaultPropertyFlags),
+        // property 'mapFormats'
+        QtMocHelpers::PropertyData<QStringList>(109, QMetaType::QStringList, QMC::DefaultPropertyFlags),
+        // property 'tilesetFormats'
+        QtMocHelpers::PropertyData<QStringList>(110, QMetaType::QStringList, QMC::DefaultPropertyFlags),
         // property 'activeAsset'
-        QtMocHelpers::PropertyData<Tiled::EditableAsset*>(109, 0x80000000 | 3, QMC::DefaultPropertyFlags | QMC::Writable | QMC::EnumOrFlag | QMC::StdCppSet, 6),
+        QtMocHelpers::PropertyData<Tiled::EditableAsset*>(111, 0x80000000 | 3, QMC::DefaultPropertyFlags | QMC::Writable | QMC::EnumOrFlag | QMC::StdCppSet, 6),
         // property 'openAssets'
-        QtMocHelpers::PropertyData<QList<QObject*>>(110, 0x80000000 | 111, QMC::DefaultPropertyFlags | QMC::EnumOrFlag),
+        QtMocHelpers::PropertyData<QList<QObject*>>(112, 0x80000000 | 113, QMC::DefaultPropertyFlags | QMC::EnumOrFlag),
         // property 'project'
-        QtMocHelpers::PropertyData<Tiled::EditableAsset*>(112, 0x80000000 | 3, QMC::DefaultPropertyFlags | QMC::EnumOrFlag),
+        QtMocHelpers::PropertyData<Tiled::EditableAsset*>(114, 0x80000000 | 3, QMC::DefaultPropertyFlags | QMC::EnumOrFlag),
         // property 'session'
-        QtMocHelpers::PropertyData<Tiled::ScriptSession*>(113, 0x80000000 | 114, QMC::DefaultPropertyFlags | QMC::EnumOrFlag),
+        QtMocHelpers::PropertyData<Tiled::ScriptSession*>(115, 0x80000000 | 116, QMC::DefaultPropertyFlags | QMC::EnumOrFlag),
         // property 'mapEditor'
-        QtMocHelpers::PropertyData<Tiled::MapEditor*>(115, 0x80000000 | 116, QMC::DefaultPropertyFlags | QMC::EnumOrFlag),
+        QtMocHelpers::PropertyData<Tiled::MapEditor*>(117, 0x80000000 | 118, QMC::DefaultPropertyFlags | QMC::EnumOrFlag),
         // property 'tilesetEditor'
-        QtMocHelpers::PropertyData<Tiled::TilesetEditor*>(117, 0x80000000 | 118, QMC::DefaultPropertyFlags | QMC::EnumOrFlag),
+        QtMocHelpers::PropertyData<Tiled::TilesetEditor*>(119, 0x80000000 | 120, QMC::DefaultPropertyFlags | QMC::EnumOrFlag),
         // property 'worlds'
-        QtMocHelpers::PropertyData<QList<QObject*>>(119, 0x80000000 | 111, QMC::DefaultPropertyFlags | QMC::EnumOrFlag),
+        QtMocHelpers::PropertyData<QList<QObject*>>(121, 0x80000000 | 113, QMC::DefaultPropertyFlags | QMC::EnumOrFlag),
     };
     QtMocHelpers::UintData qt_enums {
         // enum 'CompressionMethod'
         QtMocHelpers::EnumData<enum CompressionMethod>(84, 84, QMC::EnumFlags{}).add({
-            {  120, CompressionMethod::Gzip },
-            {  121, CompressionMethod::Zlib },
-            {  122, CompressionMethod::Zstandard },
+            {  122, CompressionMethod::Gzip },
+            {  123, CompressionMethod::Zlib },
+            {  124, CompressionMethod::Zstandard },
         }),
     };
     return QtMocHelpers::metaObjectData<ScriptModule, qt_meta_tag_ZN5Tiled12ScriptModuleE_t>(QMC::MetaObjectFlag{}, qt_stringData,
@@ -717,8 +723,8 @@ void Tiled::ScriptModule::qt_static_metacall(QObject *_o, QMetaObject::Call _c, 
     if (_c == QMetaObject::RegisterPropertyMetaType) {
         switch (_id) {
         default: *reinterpret_cast<int*>(_a[0]) = -1; break;
-        case 18:
-        case 13:
+        case 20:
+        case 15:
             *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QList<QObject*> >(); break;
         }
     }
@@ -726,31 +732,33 @@ void Tiled::ScriptModule::qt_static_metacall(QObject *_o, QMetaObject::Call _c, 
         void *_v = _a[0];
         switch (_id) {
         case 0: *reinterpret_cast<QString*>(_v) = _t->version(); break;
-        case 1: *reinterpret_cast<QString*>(_v) = _t->qtVersion(); break;
-        case 2: *reinterpret_cast<QString*>(_v) = _t->platform(); break;
-        case 3: *reinterpret_cast<QString*>(_v) = _t->arch(); break;
-        case 4: *reinterpret_cast<QString*>(_v) = _t->extensionsPath(); break;
-        case 5: *reinterpret_cast<QString*>(_v) = _t->applicationDirPath(); break;
-        case 6: *reinterpret_cast<QString*>(_v) = _t->projectFilePath(); break;
-        case 7: *reinterpret_cast<QStringList*>(_v) = _t->scriptArguments(); break;
-        case 8: *reinterpret_cast<QStringList*>(_v) = _t->actions(); break;
-        case 9: *reinterpret_cast<QStringList*>(_v) = _t->menus(); break;
-        case 10: *reinterpret_cast<QStringList*>(_v) = _t->mapFormats(); break;
-        case 11: *reinterpret_cast<QStringList*>(_v) = _t->tilesetFormats(); break;
-        case 12: *reinterpret_cast<Tiled::EditableAsset**>(_v) = _t->activeAsset(); break;
-        case 13: *reinterpret_cast<QList<QObject*>*>(_v) = _t->openAssets(); break;
-        case 14: *reinterpret_cast<Tiled::EditableAsset**>(_v) = _t->project(); break;
-        case 15: *reinterpret_cast<Tiled::ScriptSession**>(_v) = _t->session(); break;
-        case 16: *reinterpret_cast<Tiled::MapEditor**>(_v) = _t->mapEditor(); break;
-        case 17: *reinterpret_cast<Tiled::TilesetEditor**>(_v) = _t->tilesetEditor(); break;
-        case 18: *reinterpret_cast<QList<QObject*>*>(_v) = _t->worlds(); break;
+        case 1: *reinterpret_cast<QString*>(_v) = _t->tiledVersion(); break;
+        case 2: *reinterpret_cast<QString*>(_v) = _t->ghostVersion(); break;
+        case 3: *reinterpret_cast<QString*>(_v) = _t->qtVersion(); break;
+        case 4: *reinterpret_cast<QString*>(_v) = _t->platform(); break;
+        case 5: *reinterpret_cast<QString*>(_v) = _t->arch(); break;
+        case 6: *reinterpret_cast<QString*>(_v) = _t->extensionsPath(); break;
+        case 7: *reinterpret_cast<QString*>(_v) = _t->applicationDirPath(); break;
+        case 8: *reinterpret_cast<QString*>(_v) = _t->projectFilePath(); break;
+        case 9: *reinterpret_cast<QStringList*>(_v) = _t->scriptArguments(); break;
+        case 10: *reinterpret_cast<QStringList*>(_v) = _t->actions(); break;
+        case 11: *reinterpret_cast<QStringList*>(_v) = _t->menus(); break;
+        case 12: *reinterpret_cast<QStringList*>(_v) = _t->mapFormats(); break;
+        case 13: *reinterpret_cast<QStringList*>(_v) = _t->tilesetFormats(); break;
+        case 14: *reinterpret_cast<Tiled::EditableAsset**>(_v) = _t->activeAsset(); break;
+        case 15: *reinterpret_cast<QList<QObject*>*>(_v) = _t->openAssets(); break;
+        case 16: *reinterpret_cast<Tiled::EditableAsset**>(_v) = _t->project(); break;
+        case 17: *reinterpret_cast<Tiled::ScriptSession**>(_v) = _t->session(); break;
+        case 18: *reinterpret_cast<Tiled::MapEditor**>(_v) = _t->mapEditor(); break;
+        case 19: *reinterpret_cast<Tiled::TilesetEditor**>(_v) = _t->tilesetEditor(); break;
+        case 20: *reinterpret_cast<QList<QObject*>*>(_v) = _t->worlds(); break;
         default: break;
         }
     }
     if (_c == QMetaObject::WriteProperty) {
         void *_v = _a[0];
         switch (_id) {
-        case 12: _t->setActiveAsset(*reinterpret_cast<Tiled::EditableAsset**>(_v)); break;
+        case 14: _t->setActiveAsset(*reinterpret_cast<Tiled::EditableAsset**>(_v)); break;
         default: break;
         }
     }
@@ -788,7 +796,7 @@ int Tiled::ScriptModule::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
             || _c == QMetaObject::ResetProperty || _c == QMetaObject::BindableProperty
             || _c == QMetaObject::RegisterPropertyMetaType) {
         qt_static_metacall(this, _c, _id, _a);
-        _id -= 19;
+        _id -= 21;
     }
     return _id;
 }

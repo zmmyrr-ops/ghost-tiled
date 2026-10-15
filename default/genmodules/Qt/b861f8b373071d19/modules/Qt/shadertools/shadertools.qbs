@@ -32,9 +32,9 @@ QtModule {
 
     Depends { name: "Qt"; submodules: ["core","gui"] }
 
-    version: "6.11.1"
+    version: "6.11.2"
     hasLibrary: true
-    architectures: ["x86_64"]
+    architectures: ["arm64"]
     targetPlatform: "macos"
     staticLibsDebug: []
     staticLibsRelease: []
@@ -45,19 +45,19 @@ QtModule {
     frameworksDebug: []
     frameworksRelease: ["QtGui","QtCore","IOKit","DiskArbitration","UniformTypeIdentifiers","AppKit","OpenGL","ImageIO","Metal"]
     frameworkPathsDebug: []
-    frameworkPathsRelease: ["/usr/local/lib"]
+    frameworkPathsRelease: ["/opt/homebrew/lib"]
     libNameForLinkerDebug: "QtShaderTools"
     libNameForLinkerRelease: "QtShaderTools"
     libFilePathDebug: undefined
-    libFilePathRelease: "/usr/local/lib/QtShaderTools.framework/QtShaderTools"
+    libFilePathRelease: "/opt/homebrew/lib/QtShaderTools.framework/QtShaderTools"
     pluginTypes: []
     moduleConfig: ["shared","lib_bundle"]
     cpp.defines: ["QT_SHADERTOOLS_LIB"]
-    cpp.systemIncludePaths: ["/usr/local/lib/QtShaderTools.framework/Headers"]
+    cpp.systemIncludePaths: ["/opt/homebrew/lib/QtShaderTools.framework/Headers"]
     cpp.libraryPaths: []
     isFramework: true
     Group {
-        files: "/usr/local/share/qt/metatypes/qt6shadertools_metatypes.json"
+        files: "/opt/homebrew/share/qt/metatypes/qt6shadertools_metatypes.json"
         filesAreTargets: true
         fileTags: ["qt.core.metatypes"]
     }

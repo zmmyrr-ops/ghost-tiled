@@ -37,9 +37,9 @@ QtModule {
     qtModuleName: "Quick"
     Depends { name: "Qt"; submodules: ["core","gui","qml","opengl","core","gui","qml"] }
 
-    version: "6.11.1"
+    version: "6.11.2"
     hasLibrary: true
-    architectures: ["x86_64"]
+    architectures: ["arm64"]
     targetPlatform: "macos"
     staticLibsDebug: []
     staticLibsRelease: []
@@ -50,11 +50,11 @@ QtModule {
     frameworksDebug: []
     frameworksRelease: ["QtOpenGL","QtGui","AppKit","OpenGL","ImageIO","Metal","QtQml","QtNetwork","QtCore","IOKit","DiskArbitration","UniformTypeIdentifiers"]
     frameworkPathsDebug: []
-    frameworkPathsRelease: ["/usr/local/lib"]
+    frameworkPathsRelease: ["/opt/homebrew/lib"]
     libNameForLinkerDebug: "QtQuick"
     libNameForLinkerRelease: "QtQuick"
     libFilePathDebug: undefined
-    libFilePathRelease: "/usr/local/lib/QtQuick.framework/QtQuick"
+    libFilePathRelease: "/opt/homebrew/lib/QtQuick.framework/QtQuick"
     pluginTypes: ["scenegraph","vectorimageformats"]
     moduleConfig: ["shared","lib_bundle"]
     cpp.defines: {
@@ -63,14 +63,14 @@ QtModule {
             result.push("QT_QML_DEBUG");
         return result;
     }
-    cpp.systemIncludePaths: ["/usr/local/lib/QtQuick.framework/Headers"]
+    cpp.systemIncludePaths: ["/opt/homebrew/lib/QtQuick.framework/Headers"]
     cpp.libraryPaths: []
     property bool qmlDebugging: false
-    property string qmlPath: "/usr/local/share/qt/qml"
+    property string qmlPath: "/opt/homebrew/share/qt/qml"
     property string qmlImportsPath: ""
     isFramework: true
     Group {
-        files: "/usr/local/share/qt/metatypes/qt6quick_metatypes.json"
+        files: "/opt/homebrew/share/qt/metatypes/qt6quick_metatypes.json"
         filesAreTargets: true
         fileTags: ["qt.core.metatypes"]
     }

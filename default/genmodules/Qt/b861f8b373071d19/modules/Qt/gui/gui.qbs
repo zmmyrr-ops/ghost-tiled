@@ -34,8 +34,8 @@ QtModule {
     }
 
     property string defaultQpaPlugin: undefined
-    version: "6.11.1"
-    architectures: ["x86_64"]
+    version: "6.11.2"
+    architectures: ["arm64"]
     targetPlatform: "macos"
     staticLibsDebug: []
     staticLibsRelease: []
@@ -46,11 +46,11 @@ QtModule {
     frameworksDebug: []
     frameworksRelease: ["QtCore","IOKit","DiskArbitration","UniformTypeIdentifiers","AppKit","OpenGL","ImageIO","Metal"]
     frameworkPathsDebug: []
-    frameworkPathsRelease: ["/usr/local/lib"]
+    frameworkPathsRelease: ["/opt/homebrew/lib"]
     libNameForLinkerDebug: "QtGui"
     libNameForLinkerRelease: "QtGui"
     libFilePathDebug: undefined
-    libFilePathRelease: "/usr/local/lib/QtGui.framework/QtGui"
+    libFilePathRelease: "/opt/homebrew/lib/QtGui.framework/QtGui"
     pluginTypes: ["accessiblebridge","platforms","platforms/darwin","xcbglintegrations","platformthemes","platforminputcontexts","generic","iconengines","imageformats","egldeviceintegrations","wayland-graphics-integration-client","wayland-decoration-client","wayland-shell-integration"]
 
     cpp.entryPoint: qbs.targetOS.containsAny(["ios", "tvos"])
@@ -59,7 +59,7 @@ QtModule {
                   : undefined
 
     cpp.defines: ["QT_GUI_LIB"]
-    cpp.systemIncludePaths: ["/usr/local/lib/QtGui.framework/Headers"]
+    cpp.systemIncludePaths: ["/opt/homebrew/lib/QtGui.framework/Headers"]
     cpp.libraryPaths: []
 
     Properties {
@@ -73,7 +73,7 @@ QtModule {
     }
     isFramework: true
     Group {
-        files: "/usr/local/share/qt/metatypes/qt6gui_metatypes.json"
+        files: "/opt/homebrew/share/qt/metatypes/qt6gui_metatypes.json"
         filesAreTargets: true
         fileTags: ["qt.core.metatypes"]
     }

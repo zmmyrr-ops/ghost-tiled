@@ -2,7 +2,7 @@ QtModule {
     qtModuleName: "QmlIntegration"
     Depends { name: "Qt"; submodules: ["core"]}
 
-    version: "6.11.1"
+    version: "6.11.2"
     architectures: []
     targetPlatform: "macos"
     hasLibrary: false
@@ -23,7 +23,7 @@ QtModule {
     pluginTypes: []
     moduleConfig: []
     cpp.defines: ["QT_QMLINTEGRATION_LIB"]
-    cpp.systemIncludePaths: ["/usr/local/include","/usr/local/include/QtQmlIntegration"]
+    cpp.systemIncludePaths: ["/opt/homebrew/include","/opt/homebrew/include/QtQmlIntegration"]
     cpp.libraryPaths: []
     
 }

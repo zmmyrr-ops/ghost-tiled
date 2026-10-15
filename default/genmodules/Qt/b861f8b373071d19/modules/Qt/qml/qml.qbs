@@ -9,7 +9,7 @@ QtModule {
 
     property string qmlImportScannerName: Qt.core.qmlImportScannerName
     property string qmlImportScannerFilePath: Qt.core.qmlImportScannerFilePath
-    property string qmlPath: "/usr/local/share/qt/qml"
+    property string qmlPath: "/opt/homebrew/share/qt/qml"
 
     property bool generateCacheFiles: false
     Depends { name: "Qt.qmlcache"; condition: generateCacheFiles; required: false }
@@ -27,9 +27,9 @@ QtModule {
     readonly property string pluginListFilePathRelease: product.buildDirectory + "/plugins.list"
     property bool linkPlugins: isStaticLibrary && Qt.plugin_support.linkPlugins
 
-    version: "6.11.1"
+    version: "6.11.2"
     hasLibrary: true
-    architectures: ["x86_64"]
+    architectures: ["arm64"]
     targetPlatform: "macos"
     staticLibsDebug: (linkPlugins ? ['@' + pluginListFilePathDebug] : []).concat([])
     staticLibsRelease: (linkPlugins ? ['@' + pluginListFilePathRelease] : []).concat([])
@@ -40,19 +40,19 @@ QtModule {
     frameworksDebug: []
     frameworksRelease: ["QtNetwork","QtCore","IOKit","DiskArbitration","UniformTypeIdentifiers"]
     frameworkPathsDebug: []
-    frameworkPathsRelease: ["/usr/local/lib"]
+    frameworkPathsRelease: ["/opt/homebrew/lib"]
     libNameForLinkerDebug: "QtQml"
     libNameForLinkerRelease: "QtQml"
     libFilePathDebug: undefined
-    libFilePathRelease: "/usr/local/lib/QtQml.framework/QtQml"
+    libFilePathRelease: "/opt/homebrew/lib/QtQml.framework/QtQml"
     pluginTypes: ["qmltooling"]
     moduleConfig: ["shared","lib_bundle"]
     cpp.defines: ["QT_QML_LIB"]
-    cpp.systemIncludePaths: ["/usr/local/lib/QtQml.framework/Headers"]
+    cpp.systemIncludePaths: ["/opt/homebrew/lib/QtQml.framework/Headers"]
     cpp.libraryPaths: []
     isFramework: true
     Group {
-        files: "/usr/local/share/qt/metatypes/qt6qml_metatypes.json"
+        files: "/opt/homebrew/share/qt/metatypes/qt6qml_metatypes.json"
         filesAreTargets: true
         fileTags: ["qt.core.metatypes"]
     }

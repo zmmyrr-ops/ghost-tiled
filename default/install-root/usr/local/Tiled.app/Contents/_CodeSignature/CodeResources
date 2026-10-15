@@ -6,11 +6,11 @@
 	<dict>
 		<key>Resources/Assets.car</key>
 		<data>
-		UAqwXSiapwton50pyb68vKS6/RA=
+		px6IGFY3dakf36ziF/dYIpmXiIc=
 		</data>
 		<key>Resources/tiled-icon-macos26.icns</key>
 		<data>
-		/a1M+45kSY2Xk+ivRLTHspu7/Ck=
+		KLTj2kn3dxEL8ZFr7otf7NvXEKM=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -19,32 +19,32 @@
 		<dict>
 			<key>cdhash</key>
 			<data>
-			QZjAdjVE5dlTpKrm67yKQUYgFLY=
+			3+2a1nKQ1C7WNuWM4ozxbz13HOM=
 			</data>
 			<key>requirement</key>
-			<string>cdhash H"4198c0763544e5d953a4aae6ebbc8a41462014b6"</string>
+			<string>cdhash H"dfed9ad67290d42ed636e58ce28cf16f3d771ce3"</string>
 		</dict>
 		<key>Frameworks/libtilededitor.dylib</key>
 		<dict>
 			<key>cdhash</key>
 			<data>
-			NOpyBZ+0AYq9chO4oRu7hfrynuQ=
+			qIryR5NrX7rrVEMPEI/9YVSfuBI=
 			</data>
 			<key>requirement</key>
-			<string>cdhash H"34ea72059fb4018abd7213b8a11bbb85faf29ee4"</string>
+			<string>cdhash H"a88af247936b5fbaeb54430f108ffd61549fb812"</string>
 		</dict>
 		<key>Resources/Assets.car</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			fpdinMaKMPzEN+zTKldO2ma51RiOiBmsBSIz1+NPBiw=
+			1qh2ki1GikNqc0RAul9ZUn0e0ZaMUxm3mEFpwUHMyFo=
 			</data>
 		</dict>
 		<key>Resources/tiled-icon-macos26.icns</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			WUmXK+XmezL4vtibUuivCPwarXozSfsK6Rydsqns65c=
+			kyu9cJAgJtJg0/yf03tKvErxdHc+BSRHYHVgNwaEA6c=
 			</data>
 		</dict>
 	</dict>
