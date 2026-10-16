@@ -18,14 +18,16 @@ assert(legacy.tilesets.some(function(t){return t&&t.name==='abandoned-decoration
 assert(find(legacy,'GhostTheme_Base').objectAt(0).tile.id===0,'upgrade changed background tile');
 GhostTheme.applyTheme(legacy);
 assert(legacy.tilesets.some(function(t){return t.name==='abandoned-map03-formal'&&t.property('ghost.backgroundMode')==='corners-v1';}),'legacy opaque wall atlas not upgraded');
-assert(find(legacy,'GhostTheme_Base').objectAt(0).tile.property('ghost.key')==='background-corners.jpg','wrong background in existing autumn map');
+assert(find(legacy,'GhostTheme_Base').objectAt(0).tile.property('ghost.key')==='background.jpg','wrong background in existing autumn map');
 var map=tiled.mapFormat('tmx').read(input);
 // Existing empty/moved/hidden background layers must be repaired by Apply.
 var emptyBase=new ObjectGroup('GhostTheme_Base');map.addLayer(emptyBase);emptyBase.opacity=0;emptyBase.visible=false;emptyBase.offset={x:100,y:200};
 GhostTheme.applyTheme(map);
 var appliedBase=find(map,'GhostTheme_Base');
 assert(map.layerAt(0)===appliedBase&&appliedBase.objectCount===1&&appliedBase.visible&&appliedBase.opacity===1&&appliedBase.offset.x===0&&appliedBase.offset.y===0,'background not repaired');
-assert(appliedBase.objectAt(0).tile.property('ghost.key')==='background-corners.jpg','wrong four-corner background');
+assert(appliedBase.objectAt(0).tile.property('ghost.key')==='background.jpg','wrong background base');
+assert(find(map,'GhostTheme_Corners').objectCount===4,'fixed corner layer missing');
+assert(find(map,'GhostTheme_Corners').locked,'fixed corner layer is editable');
 assert(find(map,'Ground').tileAt(5,5).id===7&&find(map,'Ground').tileAt(0,0).id===63,'background fix destroyed corridor or frame cells');
 var n=map.layerCount;GhostTheme.applyTheme(map);assert(map.layerCount===n,'theme application duplicated layers');
 var opts={seed:20261012,density:18,category:'mixed'};
@@ -151,10 +153,21 @@ from theme_bake import Renderer,THEME_LAYERS,bake_theme
 document=ET.parse(output).getroot()
 base_only=copy.deepcopy(document)
 for child in list(base_only):
- if child.get('name') in THEME_LAYERS-{'GhostTheme_Base'}:base_only.remove(child)
+ if child.get('name') in THEME_LAYERS-{'GhostTheme_Base','GhostTheme_Corners'}:base_only.remove(child)
 visible=Renderer(base_only,output).render()
-with Image.open(root/'Map_img/themes/abandoned/background.jpg') as bg:
- expected=bg.convert('RGBA')
+def autumn_background(width,height):
+ with Image.open(root/'Map_img/themes/abandoned-formal/background.jpg') as source:
+  source=source.convert('RGBA');scale=max(width/source.width,height/source.height)
+  cw=min(source.width,round(width/scale));ch=min(source.height,round(height/scale))
+  base=source.crop(((source.width-cw)//2,(source.height-ch)//2,(source.width-cw)//2+cw,(source.height-ch)//2+ch)).resize((width,height),Image.Resampling.LANCZOS)
+  corner_files=[('左上角装饰.png',0,0),('右上角装饰.png',1,0),('左下角装饰.png',0,1),('右下角装饰.png',1,1)]
+  for filename,right,bottom in corner_files:
+   with Image.open(root/'Map_img/themes/abandoned-formal'/filename) as corner:
+    corner=corner.convert('RGBA').resize((round(corner.width*scale),round(corner.height*scale)),Image.Resampling.LANCZOS)
+    x=width-corner.width if right else 0;y=height-corner.height if bottom else 0;base.alpha_composite(corner,(x,y))
+  return base
+expected=autumn_background(4800,4800)
+with Image.open(root/'Map_img/themes/abandoned-formal/background.jpg'):
  for box in [(0,0,900,900),(3900,0,4800,900),(0,3900,900,4800),(3900,3900,4800,4800)]:
   assert visible.crop(box).tobytes()==expected.crop(box).tobytes(),f'Corner background is covered: {box}'
 original=Path(str(output)+'.original.tmx')
@@ -173,13 +186,10 @@ for width,height in [(60,30),(30,60),(40,53)]:
  path=Path(str(output)+f'.{width}x{height}.tmx')
  doc=ET.parse(path).getroot()
  for child in list(doc):
-  if child.tag in {'layer','objectgroup'} and child.get('name')!='GhostTheme_Base':doc.remove(child)
+  if child.tag in {'layer','objectgroup'} and child.get('name') not in {'GhostTheme_Base','GhostTheme_Corners'}:doc.remove(child)
  rendered=Renderer(doc,path).render()
- with Image.open(root/'Map_img/themes/abandoned/background.jpg') as bg:
-  scale=max(width*100/bg.width,height*100/bg.height)
-  cw=round(width*100/scale);ch=round(height*100/scale);x=(bg.width-cw)//2;y=(bg.height-ch)//2
-  expected=bg.convert('RGBA').crop((x,y,x+cw,y+ch)).resize((width*100,height*100),Image.Resampling.LANCZOS)
-  assert rendered.tobytes()==expected.tobytes(),f'Incorrect crop pixels: {width}x{height}'
+ expected=autumn_background(width*100,height*100)
+ assert rendered.tobytes()==expected.tobytes(),f'Incorrect crop pixels: {width}x{height}'
  with tempfile.TemporaryDirectory() as tmp:
   target=Path(tmp)/'display/Map_model/Map_1.tmx';bake_theme(path,target)
   assert Renderer(ET.parse(path).getroot(),path).render().tobytes()==Renderer(ET.parse(target).getroot(),target).render().tobytes(),'Rectangular display export lost pixels'

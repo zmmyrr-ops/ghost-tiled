@@ -6,12 +6,12 @@
   <grid orientation="orthogonal" width="1" height="1" />
   <tile id="0">
     <properties>
-      <property name="ghost.key" value="background-corners.jpg" />
-      <property name="ghost.label" value="秋季背景（含四角设备）" />
+      <property name="ghost.key" value="background.jpg" />
+      <property name="ghost.label" value="秋季背景（底图，四角装饰独立叠加）" />
       <property name="ghost.category" value="background" />
       <property name="ghost.defaultScale" type="float" value="1" />
     </properties>
-    <image source="../Map_img/themes/abandoned-formal/background-corners.jpg" width="4800" height="4800" />
+    <image source="../Map_img/themes/abandoned-formal/background.jpg" width="4800" height="4800" />
   </tile>
   <tile id="1">
     <properties>

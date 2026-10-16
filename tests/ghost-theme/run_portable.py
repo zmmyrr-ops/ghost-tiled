@@ -49,7 +49,7 @@ with tempfile.TemporaryDirectory(prefix='主题资源测试-') as tmp:
         doc.write(source,encoding='utf-8')
         if kind!='absent':shutil.copytree(bundle,project,dirs_exist_ok=True)
         if kind=='malformed':(project/'Map_tsx/abandoned-map03-formal.tsx').write_text('<broken')
-        if kind=='missing-image':(project/'Map_img/themes/abandoned-formal/background-corners.jpg').unlink()
+        if kind=='missing-image':(project/'Map_img/themes/abandoned-formal/background.jpg').unlink()
         if kind=='bad-rules':(project/'decoration-rules-formal.json').write_text('explanation, not JSON')
         cases.append({'kind':kind,'source':str(source),'saved':str(folder/'saved.tmx')})
     code='var cases='+json.dumps(cases)+';\n'+'''

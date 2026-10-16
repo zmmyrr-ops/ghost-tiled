@@ -76,7 +76,7 @@ var GhostTheme = (function () {
         return selected ? selected === 'autumn' : map.property('ghost.theme') === 'abandoned-v1';
     }
     function setAutumnLayers(map, visible) {
-        ['Base','Edges','Scatter','RoomLeaves','Grass','Props','Components','Scenes'].forEach(function(suffix){var l=layer(map,PREFIX+suffix);if(l)l.visible=visible;});
+        ['Base','Corners','Edges','Scatter','RoomLeaves','Grass','Props','Components','Scenes'].forEach(function(suffix){var l=layer(map,PREFIX+suffix);if(l)l.visible=visible;});
     }
     function fittedBackground(map,source) {
         var width=map.width*map.tileWidth,height=map.height*map.tileHeight;
@@ -95,6 +95,36 @@ var GhostTheme = (function () {
         if(existing){if(!map.replaceTileset(existing,ts))throw new Error('更新背景裁切失败');}else map.addTileset(ts);
         return tile;
     }
+    function fixedCorners(map,decor,base,source) {
+        // The clean background is deliberately kept free of the four equipment
+        // scenes.  Add those transparent PNGs as separate objects so they stay
+        // above the map tiles and are never covered by the wall/ground atlas.
+        var width=map.width*map.tileWidth,height=map.height*map.tileHeight;
+        var scale=Math.max(width/source.width,height/source.height);
+        var specs=[
+            {id:32,x:0,y:0,anchor:'top-left'},
+            {id:33,x:width,y:0,anchor:'top-right'},
+            {id:34,x:0,y:height,anchor:'bottom-left'},
+            {id:35,x:width,y:height,anchor:'bottom-right'}
+        ];
+        base.objects.slice().forEach(function(o){
+            if(o.property('ghost.fixedCorner'))base.removeObject(o);
+        });
+        specs.forEach(function(spec){
+            var tile=decor.tile(spec.id);
+            if(!tile||!tile.image||!tile.image.width)throw new Error('秋季四角装饰素材缺失：'+spec.id);
+            var w=tile.width*scale,h=tile.height*scale;
+            var x=spec.x,y=spec.y;
+            if(spec.anchor==='top-left'||spec.anchor==='top-right')y=h;
+            if(spec.anchor==='top-right')x-=w;
+            if(spec.anchor==='bottom-left')y=height;
+            if(spec.anchor==='bottom-right'){x-=w;y=height;}
+            var o=object(decor,spec.id,x,y,scale,0);
+            o.setProperty('ghost.fixedCorner',spec.anchor);
+            o.setProperty('ghost.locked',true);
+            base.addObject(o);
+        });
+    }
     function applyTheme(map) {
         requireMap(map);
         // Include embedded legacy tileset upgrades in the same undo operation.
@@ -103,7 +133,8 @@ var GhostTheme = (function () {
         var old=map.tilesets.filter(function(t){return t&&(t.name==='map01'||t.name==='map01-original'||t.name==='abandoned-map01'||t.name==='abandoned-map03-formal');});
         if(!old.length && !map.tilesets.some(function(t){return t&&(t.name==='abandoned-map01'||t.name==='abandoned-map03-formal');}))throw new Error('未找到 map01 图集，暂不自动替换其他主题');
         var backgroundTile=decor.tile(0);
-        if(!backgroundTile||!backgroundTile.image.width||!backgroundTile.image.height)throw new Error('秋季四角背景图片缺失，请更新主题资源');
+        if(!backgroundTile||!backgroundTile.image.width||!backgroundTile.image.height)throw new Error('秋季背景图片缺失，请更新主题资源');
+        var backgroundSource=backgroundTile.image;
         backgroundTile=fittedBackground(map,backgroundTile);
             old.forEach(function(t){if(t===walls)return;if(!map.replaceTileset(t,walls))throw new Error('替换图集失败');});if(map.tilesets.indexOf(decor)<0)map.addTileset(decor);
             // Old ground contains stray floor cells in the outer border. Reveal the new base there.
@@ -125,6 +156,15 @@ var GhostTheme = (function () {
             bg.tile=backgroundTile;bg.x=0;bg.y=map.height*100;bg.width=map.width*100;bg.height=map.height*100;bg.rotation=0;bg.visible=true;
             bg.tileFlippedHorizontally=false;bg.tileFlippedVertically=false;
             bg.setProperty('ghost.assetKey',backgroundTile.property('ghost.key'));
+            var corners=layer(map,PREFIX+'Corners');
+            if(corners&&!corners.isObjectLayer)throw new Error(PREFIX+'Corners 必须是对象层');
+            if(!corners){corners=new ObjectGroup(PREFIX+'Corners');map.addLayer(corners);}
+            corners.drawOrder=ObjectGroup.IndexOrder;corners.offset={x:0,y:0};corners.opacity=1;corners.visible=true;
+            // Maps created by the previous revision may still have corner
+            // objects in the background layer. Move them out before rebuilding.
+            base.objects.slice().forEach(function(o){if(o.property('ghost.fixedCorner'))base.removeObject(o);});
+            fixedCorners(map,decor,corners,backgroundSource);
+            corners.locked=true;
             base.locked=true;setAutumnLayers(map,true);map.setProperty('ghost.theme','abandoned-v1');map.setProperty('ghost.mapTheme','autumn');map.setProperty('ghost.decorationRules',FORMAL_RULE_VERSION);
             group(map,'Edges');group(map,'Scatter');group(map,'Props');group(map,'RoomLeaves');group(map,'Grass');
         });
